@@ -14,7 +14,7 @@ app.set("view engine", "ejs");
 
 //middleware & static files
 app.use(express.static("public"));
-app.use(express.urlencoded({extended:true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
 //connect to mongodb
@@ -24,11 +24,10 @@ mongoose
   .then((result) => app.listen(3000))
   .catch((err) => console.log(err));
 
-
 // routes
 
 app.get("/", (req, res) => {
-  res.redirect('/projects')
+  res.redirect("/projects");
 });
 
 app.get("/about", (req, res) => {
@@ -36,39 +35,52 @@ app.get("/about", (req, res) => {
 });
 
 // project routes
-app.get ('/projects',(req,res)=>{
-  Project.find().sort({createdAt:-1})
-  .then((result)=>{
-    res.render('index',{title:'All Projects',projects:result})
-  })
-  .catch((err)=>{
-    console.log(err)
-  })
-})
+app.get("/projects", (req, res) => {
+  Project.find()
+    .sort({ createdAt: -1 })
+    .then((result) => {
+      res.render("index", { title: "All Projects", projects: result });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 
-app.post ('/projects',(req,res) => {
-  const tags = ['test1, test2, test3']
+app.post("/projects", (req, res) => {
+  const tags = ["test1, test2, test3"];
   const project = new Project(req.body);
   project.tag = tags;
-  project.save()
-  .then((result)=>{
-    res.redirect('projects');
-  })
-  .catch((err)=>{
-    console.log(err)
-  })
-})
+  project
+    .save()
+    .then((result) => {
+      res.redirect("projects");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 
-app.get("/projects/:id",(req,res)=>{
-  const id= req.params.id;
+app.get("/projects/:id", (req, res) => {
+  const id = req.params.id;
   Project.findById(id)
-  .then(result=>{
-    res.render('details',{project:result,title: "Project Details"});
-  })
-  .catch((err)=>{
-    console.log(err)
-  })
-})
+    .then((result) => {
+      res.render("details", { project: result, title: "Project Details" });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+app.delete("/projects/:id", (req, res) => {
+  const id = req.params.id;
+  Project.findByIdAndDelete(id)
+    .then((result) => {
+      res.json({redirect: '/projects'})
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
 
 app.get("/add-project", (req, res) => {
   const project = new Project({
@@ -81,6 +93,16 @@ app.get("/add-project", (req, res) => {
   project
     .save()
     .then((result) => {
+      res.redirect("projects");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+app.get("/all-projects", (req, res) => {
+  Project.find()
+    .then((result) => {
       res.send(result);
     })
     .catch((err) => {
@@ -88,28 +110,7 @@ app.get("/add-project", (req, res) => {
     });
 });
 
-app.get('/all-projects',(req,res)=>{
-  Project.find()
-  .then((result)=>{
-    res.send(result);
-  })
-  .catch((err)=>{
-    console.log(err);
-  })
-})
-
-app.get('/single-project',(req,res)=>{
-  Project.findById('649b94520f589af496c737d9')
-  .then((result)=>{
-    res.send(result)
-  })
-  .catch((err)=>{
-    console.log(err);
-  })
-})
-
-
-app.get('/projects/create', (req, res) => {
+app.get("/projects/create", (req, res) => {
   res.render("create", { title: "Create a new project" });
 });
 
